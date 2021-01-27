@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+MINIKUBE_KUBERNETES_VERSION=${MINIKUBE_KUBERNETES_VERSION:?}
+
 # From minikube howto
 export MINIKUBE_WANTUPDATENOTIFICATION=false
 export MINIKUBE_WANTREPORTERRORPROMPT=false
@@ -55,9 +57,7 @@ check_or_install_minikube
 MINIKUBE_BIN=$(which minikube)
 
 # Start minikube
-sudo -E ${MINIKUBE_BIN} start --vm-driver=none \
-    --extra-config=apiserver.Authorization.Mode=RBAC \
-    --memory 4096
+sudo -E ${MINIKUBE_BIN} start --vm-driver=none
 
 # Wait til settles
 echo "INFO: Waiting for minikube cluster to be ready ..."
@@ -67,10 +67,6 @@ until kubectl --context=minikube get pods >& /dev/null; do
     sleep 1
 done
 
-kubectl --context=minikube get clusterrolebinding kube-dns-admin >& /dev/null || \
-    kubectl --context=minikube create clusterrolebinding kube-dns-admin --serviceaccount=kube-system:default --clusterrole=cluster-admin
-kubectl create clusterrolebinding cluster-admin:kube-system --clusterrole=cluster-admin --serviceaccount=kube-system:default
-
 # Enable Nginx Ingress
 echo "INFO: Enabling ingress addon to minikube..."
 sudo -E ${MINIKUBE_BIN} addons enable ingress
@@ -79,7 +75,7 @@ sudo -E ${MINIKUBE_BIN} config set WantUpdateNotification false
 # Give some time for the cluster to become healthy
 echo "Waiting until Nginx pod is ready ..."
 typeset -i cnt=300
-until kubectl get pods -l name=nginx-ingress-controller -n kube-system | grep -q Running; do
+until kubectl get pods -l app.kubernetes.io/name=ingress-nginx -n kube-system | grep -q Running; do
     ((cnt=cnt-1)) || exit 1
     sleep 1
 done

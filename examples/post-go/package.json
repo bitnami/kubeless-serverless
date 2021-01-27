@@ -1,9 +1,9 @@
 {
-  "name": "go-echo",
+  "name": "post-go",
   "version": "1.0.0",
   "description": "Example function for serverless kubeless",
   "dependencies": {
-    "serverless-kubeless": "^0.10.1"
+    "serverless-kubeless": "^0.11.0"
   },
   "devDependencies": {},
   "scripts": {
